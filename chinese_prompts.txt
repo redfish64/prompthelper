@@ -1,0 +1,18 @@
+; AI Prompt Helper Export
+; Exported on: 2025-04-08T05:43:34.321Z
+
+[中文對比]
+template="Are each of these two excerpts grammatically correct and natural and what is the difference in meaning between them?\n1. __a__\n2. __b__\nPlease write your response in English."
+num_vars=2
+
+[拼音]
+template="Please write out the pinyin for the following: __a__"
+num_vars=1
+
+[翻譯]
+template="Please translate this: __a__"
+num_vars=1
+
+[語法正確]
+template="Is this grammatically correct? __a__"
+num_vars=0
