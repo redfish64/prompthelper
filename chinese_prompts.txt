@@ -15,4 +15,5 @@ num_vars=1
 
 [語法正確]
 template="Is this grammatically correct? __a__"
-num_vars=0
+num_vars=1
+

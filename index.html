@@ -377,14 +377,14 @@
             return outputString.trim();
         }
         function parseAndImportPrompts(text) {
-            const importedPrompts = {}; let currentTitle = null; let currentTemplate = null;
+            const importedPrompts = {}; let currentTitle = null; let currentTemplate = null; let currentVars = null;
             let errors = []; let lineNumber = 0; const lines = text.split('\n');
             function processCurrentPrompt() {
                 if (currentTitle && currentTemplate !== null) {
                     if (importedPrompts.hasOwnProperty(currentTitle)) { errors.push(`L${lineNumber}: Dup title: "${currentTitle}".`); }
-                    importedPrompts[currentTitle] = { title: currentTitle, template: currentTemplate };
+                    importedPrompts[currentTitle] = { title: currentTitle, template: currentTemplate, variables: currentVars };
                 } else if (currentTitle && currentTemplate === null) { errors.push(`L${lineNumber}: [${currentTitle}] ended without valid template.`); }
-                currentTitle = null; currentTemplate = null;
+                currentTitle = null; currentTemplate = null; currentVars = null;
             }
             lines.forEach(line => {
                 lineNumber++; const trimmedLine = line.trim();
@@ -397,8 +397,18 @@
                     const valueStr = trimmedLine.substring('template='.length).trim();
                     try { currentTemplate = JSON.parse(valueStr); if (typeof currentTemplate !== 'string') throw new Error("Not string."); }
                     catch (e) { errors.push(`L${lineNumber}: Invalid template for [${currentTitle}]. Err: ${e.message}.`); currentTitle = null; }
-                } else if (trimmedLine.startsWith('num_vars=') && currentTitle) { /* ignore */ }
-                else if (currentTitle) { errors.push(`L${lineNumber}: Ignoring unexpected line in [${currentTitle}]: "${trimmedLine}"`); }
+                } else if (trimmedLine.startsWith('num_vars=') && currentTitle) {
+                    const numVarsStr = trimmedLine.substring('num_vars='.length).trim();
+                    const numVars = parseInt(numVarsStr, 10);
+                    if (!isNaN(numVars) && numVars >= 0 && currentTitle) {
+                        currentVars = {}
+                        // Create placeholder variables based on num_vars
+                        for (let i = 0; i < numVars; i++) {
+                            const varName = String.fromCharCode(97 + i); // a, b, c...
+                            currentVars[varName] = ''; // Initialize with empty string
+                        }
+                    }
+                } else if (currentTitle) { errors.push(`L${lineNumber}: Ignoring unexpected line in [${currentTitle}]: "${trimmedLine}"`); }
                 else { errors.push(`L${lineNumber}: Ignoring line outside section: "${trimmedLine}"`); }
             });
             processCurrentPrompt();
@@ -556,8 +566,8 @@
             Object.entries(savedPrompts).forEach(([id, prompt]) => { existingTitles[prompt.title] = id; });
             Object.values(parsedData).forEach(parsedPrompt => {
                 const existingId = existingTitles[parsedPrompt.title];
-                if (existingId) { const ptu = savedPrompts[existingId]; ptu.template = parsedPrompt.template; ptu.variables = {}; replacedCount++; }
-                else { const newId = 'prompt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5); savedPrompts[newId] = { id: newId, title: parsedPrompt.title, template: parsedPrompt.template, variables: {} }; addedCount++; }
+                if (existingId) { const ptu = savedPrompts[existingId]; ptu.template = parsedPrompt.template; ptu.variables = parsedPrompt.variables; replacedCount++; }
+                else { const newId = 'prompt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5); savedPrompts[newId] = { id: newId, title: parsedPrompt.title, template: parsedPrompt.template, variables: parsedPrompt.variables }; addedCount++; }
             });
             if (addedCount > 0 || replacedCount > 0) { savePromptsToStorage(); renderPromptList(); showToast(`Import complete: ${addedCount} added, ${replacedCount} replaced.`); hideExportImportArea(); }
             else { showToast("Import finished, no changes made."); hideExportImportArea(); }
