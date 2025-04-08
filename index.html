@@ -3,18 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Prompt Helper</title>
-<style>
+    <title>AI Prompt Helper (LocalStorage)</title>
+
+    <script>
+      (function() {
+        const STORAGE_KEY_FONT_SIZE = 'aiPromptHelperFontSize';
+        const DEFAULT_FONT_SIZE = 16;
+        const MIN_FONT_SIZE = 10;
+        const MAX_FONT_SIZE = 64;
+
+        let sizeToApply = DEFAULT_FONT_SIZE;
+        try {
+          const savedSize = localStorage.getItem(STORAGE_KEY_FONT_SIZE);
+          if (savedSize !== null) {
+            const parsedSize = parseInt(savedSize, 10);
+            if (!isNaN(parsedSize) && parsedSize >= MIN_FONT_SIZE && parsedSize <= MAX_FONT_SIZE) {
+              sizeToApply = parsedSize;
+            }
+          }
+        } catch (e) {
+          console.error("Error reading font size from localStorage early:", e);
+          // Use default size in case of error
+        }
+        // Apply font size to the root HTML element immediately
+        document.documentElement.style.fontSize = sizeToApply + 'px';
+      })();
+    </script>
+    <style>
     /* Basic Reset & Body */
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { height: 100%; } /* Ensure html takes full height */
+    html {
+        height: 100%;
+        /* Base font size set by inline script or this fallback */
+        font-size: 16px; /* Default fallback */
+    }
     body {
         font-family: sans-serif;
         display: flex;
-        min-height: 100vh; /* Use min-height instead of height */
-        /* removed overflow: hidden; */
-        /* removed height: 100vh; */
-        /* transition: padding-left 0.3s ease; NO - transition applied to main-content margin */
+        min-height: 100vh;
+        /* Inherits font-size from html */
     }
 
     /* Sidebar */
@@ -59,6 +86,7 @@
         padding: 10px;
         text-align: center;
         border-bottom: 1px solid #ccc;
+        font-size: 1.1em; /* Relative size */
     }
     #sidebar-buttons {
         padding: 10px;
@@ -70,6 +98,7 @@
         padding: 8px;
         margin-bottom: 5px;
         cursor: pointer;
+        font-size: 0.9em; /* Relative size */
     }
     #prompt-list-container {
         flex-grow: 1;
@@ -87,6 +116,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        font-size: 0.9em; /* Relative size */
     }
     #prompt-list li:hover {
         background-color: #e9e9e9;
@@ -96,7 +126,7 @@
         border: none;
         color: red;
         cursor: pointer;
-        font-size: 1.1em;
+        font-size: 1.2em; /* Slightly larger X */
         padding: 2px 5px;
         flex-shrink: 0; /* Prevent button from shrinking */
     }
@@ -112,12 +142,11 @@
     /* Main Content */
     #main-content {
         flex-grow: 1; /* Takes remaining space */
-        /* -- ADJUSTED PADDING -- */
-        padding: 55px 15px 15px 15px; /* Increased top padding to avoid overlap with fixed button */
+        padding: 55px 15px 15px 15px; /* Increased top padding */
         display: flex;
         flex-direction: column;
         height: 100vh; /* Make main content container viewport height */
-        overflow-y: auto; /* -- ADDED: Allow vertical scrolling WITHIN main content -- */
+        overflow-y: auto; /* Allow vertical scrolling WITHIN main content */
         transition: margin-left 0.3s ease, width 0.3s ease;
         width: 100%; /* Default width */
         margin-left: 0; /* Default margin */
@@ -132,33 +161,69 @@
     #prompt-title {
         width: 100%;
         padding: 10px;
-        font-size: 1.2em;
-        margin-bottom: 10px; /* Keep margin bottom */
-        /* Removed margin-top as padding on parent handles it */
+        font-size: 1.1em; /* Relative size */
+        margin-bottom: 10px;
         border: 1px solid #ccc;
-        flex-shrink: 0; /* Prevent shrinking */
+        flex-shrink: 0;
     }
+
+    /* --- Font Size Controls --- */
+    #font-controls {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        padding: 5px;
+        background-color: #f8f8f8;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        flex-shrink: 0;
+        flex-wrap: wrap; /* Allow wrapping on very small screens */
+    }
+    #font-controls span {
+        margin-right: 10px;
+        font-weight: bold;
+        font-size: 0.9em; /* Relative size */
+    }
+    #font-controls button {
+        padding: 3px 8px;
+        font-size: 1.1em; /* Larger +/- */
+        cursor: pointer;
+        min-width: 30px;
+        margin-left: 5px;
+        border: 1px solid #ccc;
+        background-color: #eee;
+        border-radius: 3px;
+        line-height: 1;
+    }
+     #font-controls button:hover {
+         background-color: #ddd;
+     }
+     /* --- End Font Size Controls --- */
+
 
     #output-area {
         margin-bottom: 15px;
-         flex-shrink: 0; /* Prevent shrinking */
+         flex-shrink: 0;
     }
     #output-area h2, #variables-area h2, #template-area h2 {
          margin-bottom: 5px;
+         font-size: 1.0em; /* Relative size */
     }
     #output {
         width: 100%;
-        height: 150px; /* User adjustable or keep fixed? */
+        height: 150px;
         padding: 10px;
         border: 1px solid #ccc;
         background-color: #f9f9f9;
-        resize: vertical; /* Allow vertical resize by user */
-        min-height: 75px; /* Minimum height */
+        resize: vertical;
+        min-height: 75px;
+        font-size: 0.9em; /* Relative size */
     }
     #copy-output {
         padding: 8px 15px;
         cursor: pointer;
         margin-top: 5px;
+        font-size: 0.9em; /* Relative size */
     }
 
     #variables-area {
@@ -166,7 +231,7 @@
         border: 1px solid #ddd;
         padding: 10px;
         background-color: #fafafa;
-         flex-shrink: 0; /* Prevent shrinking */
+         flex-shrink: 0;
     }
      #variables-area h2 { display: inline-block; margin-right: 10px; }
     #add-variable {
@@ -195,21 +260,24 @@
         margin-right: 10px;
         min-width: 20px; /* Ensure label alignment */
         text-align: center;
+        font-size: 0.9em; /* Relative size */
     }
     .variable-item input {
         flex-grow: 1;
         padding: 5px;
         border: 1px solid #ccc;
         margin-right: 5px;
-        min-width: 50px; /* Prevent input becoming too small */
+        min-width: 50px;
+        font-size: 0.9em; /* Relative size */
     }
     .variable-item button {
         padding: 3px 6px;
         margin-left: 3px;
         cursor: pointer;
-        line-height: 1; /* Better button text alignment */
-        min-width: 25px; /* Button width consistency */
-        flex-shrink: 0; /* Prevent buttons shrinking */
+        line-height: 1;
+        min-width: 25px;
+        flex-shrink: 0;
+        font-size: 0.8em; /* Smaller buttons */
     }
      .variable-item .var-delete { background-color: #ffdddd; }
      .variable-item .var-clear { background-color: #ffffcc; }
@@ -221,20 +289,21 @@
         flex-direction: column;
         flex-grow: 1; /* Takes remaining vertical space */
         margin-bottom: 15px;
-        min-height: 150px; /* Ensure it doesnt collapse too much */
-        flex-shrink: 0; /* Let other elements shrink first if needed, but template area is important */
+        min-height: 150px;
+        flex-shrink: 0;
     }
     #template {
         width: 100%;
         flex-grow: 1; /* Textarea grows vertically */
         padding: 10px;
         border: 1px solid #ccc;
-        resize: vertical; /* Allow vertical resize */
+        resize: vertical;
         margin-bottom: 5px;
-        min-height: 100px; /* Minimum template size */
+        min-height: 100px;
+        font-size: 0.9em; /* Relative size */
     }
     #variable-buttons {
-         flex-shrink: 0; /* Prevent shrinking */
+         flex-shrink: 0;
     }
     #variable-buttons button {
         padding: 5px 10px;
@@ -243,6 +312,7 @@
         cursor: pointer;
         background-color: #e0e0e0;
         border: 1px solid #ccc;
+        font-size: 0.9em; /* Relative size */
     }
 
     #action-buttons {
@@ -254,7 +324,7 @@
         padding: 10px 20px;
         margin-right: 10px;
         cursor: pointer;
-        font-size: 1em;
+        font-size: 1em; /* Base relative size */
     }
      #save-prompt { background-color: #d4edda; border-color: #c3e6cb; }
      #duplicate-prompt { background-color: #cfe2ff; border-color: #b6d4fe; }
@@ -266,14 +336,14 @@
         bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
-        background-color: rgba(0, 0, 0, 0.75); /* Slightly darker */
+        background-color: rgba(0, 0, 0, 0.75);
         color: white;
         padding: 10px 20px;
         border-radius: 5px;
         z-index: 2000;
         opacity: 0;
         transition: opacity 0.5s ease;
-        font-size: 0.9em;
+        font-size: 0.9em; /* Relative size */
         max-width: 80%;
         text-align: center;
     }
@@ -283,34 +353,48 @@
 
     /* Simple responsive adjustments */
     @media (max-width: 600px) {
-        /* Optional: Adjust sidebar width on very small screens if needed */
+        /* Optional: Adjust sidebar width */
         /* #sidebar { width: 200px; } */
         /* body.sidebar-open #main-content { margin-left: 200px; width: calc(100% - 200px); } */
         /* body.sidebar-open #sidebar-toggle { left: 210px; } */
 
-         /* Make variable buttons slightly smaller on mobile */
          .variable-item button {
              padding: 2px 4px;
              min-width: 22px;
+             font-size: 0.75em; /* Even smaller on mobile */
          }
          .variable-item input {
              padding: 4px;
          }
           #action-buttons button {
              padding: 8px 15px;
-             font-size: 0.9em;
+             font-size: 0.9em; /* Relative size */
          }
-         #output { height: 120px; min-height: 60px;} /* Adjust output height */
-         #template { min-height: 80px; } /* Adjust template min height */
-         #main-content { padding: 55px 10px 10px 10px; } /* Slightly less horizontal padding */
+         #output { height: 120px; min-height: 60px;}
+         #template { min-height: 80px; }
+         #main-content { padding: 55px 10px 10px 10px; } /* Less horizontal padding */
 
+         #font-controls {
+            padding: 3px;
+         }
+         #font-controls span {
+             margin-right: 5px; /* Less space on mobile */
+             margin-bottom: 3px; /* Allow wrap spacing */
+         }
+         #font-controls button {
+             padding: 2px 6px;
+             font-size: 1em; /* Adjust if needed */
+             margin-left: 3px;
+             margin-bottom: 3px; /* Allow wrap spacing */
+         }
     }
 
 </style>
 </head>
-<body >
+<body>
 
-    <button id="sidebar-toggle" title="Toggle Sidebar">&#9776;</button> <div id="sidebar">
+    <button id="sidebar-toggle" title="Toggle Sidebar">&#9776;</button>
+    <div id="sidebar">
         <h2>Prompts</h2>
         <div id="sidebar-buttons">
             <button id="new-prompt">New Prompt</button>
@@ -324,6 +408,11 @@
     <div id="main-content">
         <input type="text" id="prompt-title" placeholder="Enter Prompt Title Here...">
 
+        <div id="font-controls">
+            <span>Font Size:</span>
+            <button id="font-decrease" title="Decrease Font Size">-</button>
+            <button id="font-increase" title="Increase Font Size">+</button>
+        </div>
         <div id="output-area">
              <h2>Output</h2>
             <textarea id="output" readonly placeholder="Template output with variables replaced will appear here..."></textarea>
@@ -352,7 +441,6 @@
 
     <div id="toast" class="toast"></div>
 
-
     <script>
         // --- DOM Elements ---
         const sidebar = document.getElementById('sidebar');
@@ -361,6 +449,9 @@
         const newPromptBtn = document.getElementById('new-prompt');
         const promptListUl = document.getElementById('prompt-list');
         const promptTitleInput = document.getElementById('prompt-title');
+        const fontControlsContainer = document.getElementById('font-controls');
+        const fontIncreaseBtn = document.getElementById('font-increase');
+        const fontDecreaseBtn = document.getElementById('font-decrease');
         const outputTextarea = document.getElementById('output');
         const copyOutputBtn = document.getElementById('copy-output');
         const addVariableBtn = document.getElementById('add-variable');
@@ -370,16 +461,22 @@
         const savePromptBtn = document.getElementById('save-prompt');
         const duplicatePromptBtn = document.getElementById('duplicate-prompt');
         const toastDiv = document.getElementById('toast');
+        const rootElement = document.documentElement; // Target for font size
+
+        // --- Constants ---
+        const STORAGE_KEY_PROMPTS = 'aiPromptHelperPrompts';
+        const STORAGE_KEY_FONT_SIZE = 'aiPromptHelperFontSize'; // Key used by head script too
+        const DEFAULT_FONT_SIZE = 16; // Default if nothing saved
+        const MIN_FONT_SIZE = 10;
+        const MAX_FONT_SIZE = 64;
+        const FONT_SIZE_STEP = 1;
 
         // --- State ---
         let currentPrompt = {
-            id: '', // Unique ID for saved prompts
-            title: '',
-            variables: {}, // { 'a': 'value1', 'b': 'value2' }
-            template: ''
+            id: '', title: '', variables: {}, template: ''
         };
-        let savedPrompts = {}; // { 'id1': prompt1, 'id2': prompt2 }
-        const COOKIE_NAME = 'aiPromptHelperData';
+        let savedPrompts = {};
+        let currentFontSize = DEFAULT_FONT_SIZE; // Initialized properly in loadFontSizePreference
 
         // --- Functions ---
 
@@ -388,61 +485,104 @@
             toastDiv.classList.add('show');
             setTimeout(() => {
                 toastDiv.classList.remove('show');
-            }, 2000); // Hide after 2 seconds
+            }, 2000);
         }
 
-        // Cookie Utilities
-        function setCookie(name, value, days) {
-            let expires = "";
-            if (days) {
-                const date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                expires = "; expires=" + date.toUTCString();
-            }
-            // Encode value to handle special characters and ensure cookie integrity
-            const encodedValue = encodeURIComponent(JSON.stringify(value));
-            document.cookie = name + "=" + (encodedValue || "") + expires + "; path=/; SameSite=Lax";
-             // Check if cookie might be too large
-            if (encodedValue.length > 3500) { // Conservative limit check (4KB total limit includes name, path etc)
-                 console.warn("Cookie data is getting large, potentially exceeding limits.");
-                 showToast("Warning: Saved data is large, may exceed cookie limits!");
-            }
-        }
-
-        function getCookie(name) {
-            const nameEQ = name + "=";
-            const ca = document.cookie.split(';');
-            for (let i = 0; i < ca.length; i++) {
-                let c = ca[i];
-                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-                if (c.indexOf(nameEQ) == 0) {
-                    const value = c.substring(nameEQ.length, c.length);
-                    try {
-                        // Decode and parse the JSON string
-                         return JSON.parse(decodeURIComponent(value));
-                    } catch (e) {
-                        console.error("Error parsing cookie data:", e);
-                        return null; // Return null if parsing fails
-                    }
+        // --- LocalStorage Utilities ---
+        function setLocalStorageItem(key, value) {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch (e) {
+                console.error(`Error saving to localStorage (key: ${key}):`, e);
+                if (e.name === 'QuotaExceededError') {
+                    showToast("Error: Storage space is full. Could not save data.");
+                } else {
+                    showToast("Error: Could not save data to local storage.");
                 }
             }
-            return null;
         }
 
-        function eraseCookie(name) {
-            document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax';
+        function getLocalStorageItem(key) {
+            const item = localStorage.getItem(key);
+            if (item === null) return null;
+            try {
+                return JSON.parse(item);
+            } catch (e) {
+                console.error(`Error parsing localStorage item (key: ${key}):`, e);
+                return null;
+            }
         }
 
-        // --- Prompt Loading/Saving ---
+        function removeLocalStorageItem(key) {
+            localStorage.removeItem(key);
+        }
 
-        function loadPromptsFromCookies() {
-            const data = getCookie(COOKIE_NAME);
-            savedPrompts = data || {};
+        // --- Font Size Management ---
+        function applyFontSize(size) {
+            const newSize = Math.max(MIN_FONT_SIZE, Math.min(MAX_FONT_SIZE, size));
+            // Update internal state variable IF it changed
+             if (currentFontSize !== newSize) {
+                 currentFontSize = newSize;
+             }
+
+             // Apply style (might be redundant on initial load, but needed for +/- clicks)
+             rootElement.style.fontSize = `${newSize}px`;
+
+             // Update button states
+             fontDecreaseBtn.disabled = newSize <= MIN_FONT_SIZE;
+             fontIncreaseBtn.disabled = newSize >= MAX_FONT_SIZE;
+
+             // Save preference only if called via button clicks (will be called from increase/decrease)
+             // saveFontSizePreference(newSize); // -> Moved saving into increase/decrease
+        }
+
+        function increaseFontSize() {
+            const newSize = Math.min(MAX_FONT_SIZE, currentFontSize + FONT_SIZE_STEP);
+             if (newSize !== currentFontSize) {
+                 applyFontSize(newSize); // Applies style and updates state
+                 saveFontSizePreference(newSize); // Save the new preference
+             }
+        }
+
+        function decreaseFontSize() {
+            const newSize = Math.max(MIN_FONT_SIZE, currentFontSize - FONT_SIZE_STEP);
+            if (newSize !== currentFontSize) {
+                applyFontSize(newSize); // Applies style and updates state
+                saveFontSizePreference(newSize); // Save the new preference
+            }
+        }
+
+        function saveFontSizePreference(size) {
+            localStorage.setItem(STORAGE_KEY_FONT_SIZE, size); // Save validated size
+        }
+
+        function loadFontSizePreference() {
+            // Read the value again to initialize the *state variable* and button states
+            // The initial *visual style* was set by the head script.
+             const savedSize = localStorage.getItem(STORAGE_KEY_FONT_SIZE);
+             let initialSize = DEFAULT_FONT_SIZE;
+             if (savedSize !== null) {
+                 const parsedSize = parseInt(savedSize, 10);
+                 if (!isNaN(parsedSize) && parsedSize >= MIN_FONT_SIZE && parsedSize <= MAX_FONT_SIZE) {
+                     initialSize = parsedSize;
+                 }
+             }
+             // Set the internal state and button disabled states correctly
+             currentFontSize = initialSize; // Ensure state matches loaded value
+             applyFontSize(initialSize); // Apply to set buttons correctly
+        }
+        // --- End Font Size Management ---
+
+
+        // --- Prompt Loading/Saving (Using LocalStorage) ---
+
+        function loadPromptsFromStorage() {
+            savedPrompts = getLocalStorageItem(STORAGE_KEY_PROMPTS) || {};
             renderPromptList();
         }
 
-        function savePromptsToCookies() {
-            setCookie(COOKIE_NAME, savedPrompts, 365); // Save for 1 year
+        function savePromptsToStorage() {
+            setLocalStorageItem(STORAGE_KEY_PROMPTS, savedPrompts);
         }
 
         function saveCurrentPrompt() {
@@ -451,27 +591,18 @@
                 showToast("Please enter a title before saving.");
                 return;
             }
-
-            // Update currentPrompt state from UI before saving
             currentPrompt.title = title;
-            // Variables and template are updated via their event listeners
-
             let idToSave = currentPrompt.id;
             if (!idToSave) {
-                // Generate a simple unique ID if it's a new prompt
                 idToSave = 'prompt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-                currentPrompt.id = idToSave; // Assign the new ID back to the current prompt
+                currentPrompt.id = idToSave;
             }
-
-            // Create a deep copy to save, ensuring no references are held unintentionally
             savedPrompts[idToSave] = JSON.parse(JSON.stringify(currentPrompt));
-
-            savePromptsToCookies();
-            renderPromptList(); // Update the sidebar
-            // Highlight the saved item (optional)
+            savePromptsToStorage();
+            renderPromptList();
              const listItem = promptListUl.querySelector(`li[data-id="${idToSave}"]`);
              if(listItem) {
-                 listItem.style.backgroundColor = '#d4edda'; // Indicate saved/updated
+                 listItem.style.backgroundColor = '#d4edda';
                  setTimeout(() => { listItem.style.backgroundColor = ''; }, 1000);
              }
             showToast(`Prompt "${currentPrompt.title}" saved!`);
@@ -483,42 +614,26 @@
                 showToast("Error: Could not load prompt.");
                 return;
             }
-
-            // Load a deep copy to prevent accidental modification of the saved state
             currentPrompt = JSON.parse(JSON.stringify(savedPrompts[promptId]));
-
-            // Update UI
             promptTitleInput.value = currentPrompt.title;
             templateTextarea.value = currentPrompt.template;
-
-            // Clear existing variable UI
             variableListDiv.innerHTML = '';
             variableButtonsDiv.innerHTML = '';
-
-            // Recreate variable UI from loaded data
             Object.keys(currentPrompt.variables).sort().forEach(varName => {
                 addVariableElement(varName, currentPrompt.variables[varName]);
             });
-
             updateOutput();
-            closeSidebar(); // Close sidebar after loading
-             showToast(`Prompt "${currentPrompt.title}" loaded.`);
+            closeSidebar();
+            showToast(`Prompt "${currentPrompt.title}" loaded.`);
         }
 
         function deletePrompt(promptId, promptTitle) {
-             if (!confirm(`Are you sure you want to delete the prompt "${promptTitle}"?`)) {
-                 return;
-             }
-
+             if (!confirm(`Are you sure you want to delete the prompt "${promptTitle}"?`)) return;
             if (savedPrompts[promptId]) {
                 delete savedPrompts[promptId];
-                savePromptsToCookies();
-                renderPromptList(); // Update sidebar
-
-                // If the deleted prompt was the currently loaded one, reset the view
-                if (currentPrompt.id === promptId) {
-                    createNewPromptState(); // Resets the editor to a blank state
-                }
+                savePromptsToStorage();
+                renderPromptList();
+                if (currentPrompt.id === promptId) createNewPromptState();
                 showToast(`Prompt "${promptTitle}" deleted.`);
             } else {
                 showToast("Error: Could not delete prompt.");
@@ -526,50 +641,34 @@
         }
 
         function createNewPromptState() {
-            currentPrompt = {
-                id: '',
-                title: '',
-                variables: {},
-                template: ''
-            };
-            // Update UI
+            currentPrompt = { id: '', title: '', variables: {}, template: '' };
             promptTitleInput.value = '';
             templateTextarea.value = '';
             variableListDiv.innerHTML = '';
             variableButtonsDiv.innerHTML = '';
-            output.value = '';
+            outputTextarea.value = '';
             promptTitleInput.focus();
             closeSidebar();
-            showToast("New prompt created.");
+            if (Object.keys(savedPrompts).length > 0 || document.readyState === "complete") {
+                showToast("New prompt created.");
+            }
         }
 
         function duplicateCurrentPrompt() {
-            // Create a deep copy
             const newPrompt = JSON.parse(JSON.stringify(currentPrompt));
-
-            // Clear the ID to make it a new, unsaved prompt
             newPrompt.id = '';
-            // Modify title
             newPrompt.title = currentPrompt.title + " (Copy)";
-
-            // Load this new state into the editor
-            currentPrompt = newPrompt; // Set the duplicated as the current working prompt
-
-            // Update UI to reflect the duplicated state
+            currentPrompt = newPrompt;
             promptTitleInput.value = currentPrompt.title;
             templateTextarea.value = currentPrompt.template;
-
-            // Clear and recreate variable UI (essential if addVariableElement relies on currentPrompt)
-             variableListDiv.innerHTML = '';
-             variableButtonsDiv.innerHTML = '';
-             Object.keys(currentPrompt.variables).sort().forEach(varName => {
+            variableListDiv.innerHTML = '';
+            variableButtonsDiv.innerHTML = '';
+            Object.keys(currentPrompt.variables).sort().forEach(varName => {
                  addVariableElement(varName, currentPrompt.variables[varName]);
-             });
-
+            });
             updateOutput();
             showToast("Prompt duplicated. Remember to Save.");
         }
-
 
         // --- Sidebar ---
         function toggleSidebar() {
@@ -580,282 +679,85 @@
          }
 
         function renderPromptList() {
-            promptListUl.innerHTML = ''; // Clear existing list
+            promptListUl.innerHTML = '';
             const sortedIds = Object.keys(savedPrompts).sort((a, b) => {
-                // Sort by title, case-insensitive
-                 const titleA = savedPrompts[a].title.toLowerCase();
-                 const titleB = savedPrompts[b].title.toLowerCase();
+                 const titleA = (savedPrompts[a].title || '').toLowerCase();
+                 const titleB = (savedPrompts[b].title || '').toLowerCase();
                  if (titleA < titleB) return -1;
                  if (titleA > titleB) return 1;
                  return 0;
             });
 
             if (sortedIds.length === 0) {
-                 promptListUl.innerHTML = '<li style="color: grey; text-align: center; padding: 20px;">No saved prompts</li>';
+                 promptListUl.innerHTML = '<li style="color: grey; text-align: center; padding: 20px; font-style: italic;">No saved prompts</li>';
                  return;
             }
-
 
             sortedIds.forEach(id => {
                 const prompt = savedPrompts[id];
                 const li = document.createElement('li');
                 li.setAttribute('data-id', id);
-
                 const nameSpan = document.createElement('span');
                 nameSpan.classList.add('prompt-name');
                 nameSpan.textContent = prompt.title || '(Untitled)';
-                nameSpan.title = prompt.title || '(Untitled)'; // Tooltip for long names
-                 nameSpan.onclick = (event) => {
-                    // Prevent triggering delete if clicking on the name part
-                     if (event.target === nameSpan) {
-                         loadPrompt(id);
-                     }
-                 };
-
-
+                nameSpan.title = prompt.title || '(Untitled)';
+                nameSpan.onclick = (event) => { if (event.target === nameSpan) loadPrompt(id); };
                 const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = '×'; // Multiplication sign X
+                deleteBtn.textContent = '×';
                 deleteBtn.classList.add('delete-prompt');
                 deleteBtn.title = 'Delete Prompt';
-                deleteBtn.onclick = (event) => {
-                    event.stopPropagation(); // Prevent li click (loading) when deleting
-                    deletePrompt(id, prompt.title);
-                };
-
+                deleteBtn.onclick = (event) => { event.stopPropagation(); deletePrompt(id, prompt.title); };
                 li.appendChild(nameSpan);
                 li.appendChild(deleteBtn);
                 promptListUl.appendChild(li);
             });
         }
 
-        // --- Variable Management ---
+        // --- Variable Management --- (No changes needed here)
+        function getNextVarName(){const e=Object.keys(currentPrompt.variables);for(let t=0;t<26;t++){const n=String.fromCharCode(97+t);if(!e.includes(n))return n}return showToast("Maximum variables (z) reached."),null}
+        function addVariableElement(e,t=""){e in currentPrompt.variables||(currentPrompt.variables[e]=t);const n=document.createElement("div");n.classList.add("variable-item"),n.setAttribute("data-varname",e);const o=document.createElement("label");o.textContent=e;const a=document.createElement("input");a.type="text",a.value=t,a.placeholder=`Value for "${e}"`,a.oninput=()=>{currentPrompt.variables[e]=a.value,updateOutput()},a.onpaste=()=>{setTimeout(()=>{a.dispatchEvent(new Event("input"))},0)};const r=document.createElement("button");r.textContent="Clr",r.title="Clear Value",r.classList.add("var-clear"),r.onclick=()=>{a.value="",a.dispatchEvent(new Event("input"))};const s=document.createElement("button");s.textContent="Pst",s.title="Paste from Clipboard",s.classList.add("var-paste"),s.onclick=async()=>{try{const e=await navigator.clipboard.readText();a.value=e,a.dispatchEvent(new Event("input")),showToast(`Pasted into variable "${e}".`)}catch(e){console.error("Failed to read clipboard contents: ",e),showToast("Failed to paste. Check permissions.")}};const l=document.createElement("button");l.textContent="Del",l.title="Delete Variable",l.classList.add("var-delete"),l.onclick=()=>{removeVariable(e)},n.appendChild(o),n.appendChild(a),n.appendChild(r),n.appendChild(s),n.appendChild(l),variableListDiv.appendChild(n),addVariableInsertButton(e),updateOutput()}
+        function handleAddVariableClick(){const e=getNextVarName();if(e){addVariableElement(e);const t=variableListDiv.querySelector(`[data-varname="${e}"] input`);t&&t.focus()}}
+        function removeVariable(e){delete currentPrompt.variables[e];const t=variableListDiv.querySelector(`.variable-item[data-varname="${e}"]`);t&&t.remove();const n=variableButtonsDiv.querySelector(`button[data-varname="${e}"]`);n&&n.remove(),updateOutput()}
+        function addVariableInsertButton(e){const t=document.createElement("button");t.textContent=e,t.title=`Insert __${e}__`,t.setAttribute("data-varname",e),t.onclick=()=>{insertTextAtCursor(templateTextarea,`__${e}__`),templateTextarea.dispatchEvent(new Event("input",{bubbles:!0}))},variableButtonsDiv.appendChild(t)}
+        function insertTextAtCursor(e,t){const n=e.selectionStart,o=e.selectionEnd,a=e.value;e.value=a.substring(0,n)+t+a.substring(o),e.selectionStart=e.selectionEnd=n+t.length,e.focus()}
 
-        function getNextVarName() {
-            const existingVars = Object.keys(currentPrompt.variables);
-            for (let i = 0; i < 26; i++) {
-                const char = String.fromCharCode(97 + i); // a, b, c...
-                if (!existingVars.includes(char)) {
-                    return char;
-                }
-            }
-            // Fallback or error if > 26 variables needed
-             showToast("Maximum variables (z) reached.");
-            return null;
-        }
-
-        function addVariableElement(varName, initialValue = '') {
-            // Add to state
-            if (!(varName in currentPrompt.variables)) {
-                 currentPrompt.variables[varName] = initialValue;
-            }
-
-
-            // Create UI Elements
-            const itemDiv = document.createElement('div');
-            itemDiv.classList.add('variable-item');
-            itemDiv.setAttribute('data-varname', varName);
-
-            const label = document.createElement('label');
-            label.textContent = varName;
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.value = initialValue;
-            input.placeholder = `Value for variable "${varName}"`;
-            input.oninput = () => {
-                currentPrompt.variables[varName] = input.value;
-                updateOutput();
-            };
-             input.onpaste = (event) => { // Also trigger update on paste
-                 setTimeout(() => { // Allow paste to complete
-                     currentPrompt.variables[varName] = input.value;
-                     updateOutput();
-                 }, 0);
-             };
-
-
-            const clearBtn = document.createElement('button');
-            clearBtn.textContent = 'x';
-            clearBtn.title = 'Clear Value';
-            clearBtn.classList.add('var-clear');
-            clearBtn.onclick = () => {
-                input.value = '';
-                currentPrompt.variables[varName] = '';
-                updateOutput();
-            };
-
-            const pasteBtn = document.createElement('button');
-            pasteBtn.textContent = 'P'; // Short for Paste
-            pasteBtn.title = 'Paste from Clipboard';
-            pasteBtn.classList.add('var-paste');
-            pasteBtn.onclick = async () => {
-                 try {
-                    const text = await navigator.clipboard.readText();
-                    input.value = text;
-                    currentPrompt.variables[varName] = text;
-                    updateOutput();
-                    showToast(`Pasted into variable "${varName}".`);
-                 } catch (err) {
-                    console.error('Failed to read clipboard contents: ', err);
-                    showToast("Failed to paste. Browser may require permission.");
-                 }
-            };
-
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'X';
-            deleteBtn.title = 'Delete Variable';
-            deleteBtn.classList.add('var-delete');
-            deleteBtn.onclick = () => {
-                removeVariable(varName);
-            };
-
-            itemDiv.appendChild(label);
-            itemDiv.appendChild(input);
-            itemDiv.appendChild(clearBtn);
-            itemDiv.appendChild(pasteBtn);
-            itemDiv.appendChild(deleteBtn);
-            variableListDiv.appendChild(itemDiv);
-
-            // Add corresponding insert button below template
-            addVariableInsertButton(varName);
-
-            updateOutput(); // Recalculate output when variable is added
-        }
-
-        function handleAddVariableClick() {
-             const newVarName = getNextVarName();
-             if (newVarName) {
-                addVariableElement(newVarName);
-                // Optional: focus the new input
-                 const newItem = variableListDiv.querySelector(`[data-varname="${newVarName}"] input`);
-                 if (newItem) {
-                     newItem.focus();
-                 }
-
-             }
-        }
-
-
-        function removeVariable(varName) {
-            // Remove from state
-            delete currentPrompt.variables[varName];
-
-            // Remove UI elements
-            const itemDiv = variableListDiv.querySelector(`.variable-item[data-varname="${varName}"]`);
-            if (itemDiv) itemDiv.remove();
-
-            const insertBtn = variableButtonsDiv.querySelector(`button[data-varname="${varName}"]`);
-            if (insertBtn) insertBtn.remove();
-
-            updateOutput(); // Recalculate output
-        }
-
-        function addVariableInsertButton(varName) {
-            const button = document.createElement('button');
-            button.textContent = varName;
-            button.title = `Insert __${varName}__`;
-            button.setAttribute('data-varname', varName);
-            button.onclick = () => {
-                insertTextAtCursor(templateTextarea, `__${varName}__`);
-                // Trigger input event for template manually to update state
-                templateTextarea.dispatchEvent(new Event('input', { bubbles: true }));
-            };
-            variableButtonsDiv.appendChild(button);
-        }
-
-        // Helper to insert text at cursor position
-        function insertTextAtCursor(textarea, text) {
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            const currentText = textarea.value;
-            textarea.value = currentText.substring(0, start) + text + currentText.substring(end);
-            textarea.selectionStart = textarea.selectionEnd = start + text.length;
-            textarea.focus(); // Keep focus on the textarea
-        }
-
-
-        // --- Output Generation ---
-
-        function updateOutput() {
-            let result = currentPrompt.template;
-            // Sort keys to replace longer keys first if needed (e.g., __aa__ before __a__)
-            // Though with current naming (a,b,c) it's not strictly necessary.
-            const sortedVars = Object.keys(currentPrompt.variables).sort((a, b) => b.length - a.length);
-
-            sortedVars.forEach(varName => {
-                const placeholder = `__${varName}__`;
-                // Use a regex with 'g' flag for global replacement
-                const regex = new RegExp(placeholder.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g'); // Escape regex special chars
-                result = result.replace(regex, currentPrompt.variables[varName] || ''); // Replace with value or empty string if undefined/null
-            });
-            outputTextarea.value = result;
-        }
-
+        // --- Output Generation --- (Unchanged)
+        function updateOutput(){let e=currentPrompt.template;const t=Object.keys(currentPrompt.variables).sort(((e,t)=>t.length-e.length));t.forEach((t=>{const n=`__${t}__`,o=new RegExp(n.replace(/[-\/\\^$*+?.()|[\]{}]/g,"\\$&"),"g");e=e.replace(o,currentPrompt.variables[t]||"")})),outputTextarea.value=e}
 
         // --- Event Listeners ---
-
         sidebarToggle.addEventListener('click', toggleSidebar);
         newPromptBtn.addEventListener('click', createNewPromptState);
         savePromptBtn.addEventListener('click', saveCurrentPrompt);
         duplicatePromptBtn.addEventListener('click', duplicateCurrentPrompt);
-
         addVariableBtn.addEventListener('click', handleAddVariableClick);
-
-        // Use event delegation for variable list buttons if needed, but direct assignment works too
-        // variableListDiv.addEventListener('click', (event) => { ... });
-
-        templateTextarea.addEventListener('input', () => {
-            currentPrompt.template = templateTextarea.value;
-            updateOutput();
-        });
-
-        promptTitleInput.addEventListener('input', () => {
-             // Update title in state immediately only if the prompt is already saved
-             // Otherwise, it's just staging the title for the next save.
-             if (currentPrompt.id) {
-                 currentPrompt.title = promptTitleInput.value;
-                 // Maybe update title in sidebar list live? (more complex)
-             }
-         });
-
-
+        fontIncreaseBtn.addEventListener('click', increaseFontSize);
+        fontDecreaseBtn.addEventListener('click', decreaseFontSize);
+        templateTextarea.addEventListener('input', () => { currentPrompt.template = templateTextarea.value; updateOutput(); });
+        promptTitleInput.addEventListener('input', () => { if (currentPrompt.id) currentPrompt.title = promptTitleInput.value; });
         copyOutputBtn.addEventListener('click', async () => {
-            if (!outputTextarea.value) {
-                showToast("Output is empty.");
-                return;
-            }
-            try {
-                await navigator.clipboard.writeText(outputTextarea.value);
-                showToast("Output copied to clipboard!");
-            } catch (err) {
-                console.error('Failed to copy text: ', err);
-                showToast("Failed to copy. Check browser permissions.");
-            }
+            if (!outputTextarea.value) { showToast("Output is empty."); return; }
+            try { await navigator.clipboard.writeText(outputTextarea.value); showToast("Output copied to clipboard!"); }
+            catch (err) { console.error('Failed to copy text: ', err); showToast("Failed to copy. Check permissions."); }
         });
-
-        // Close sidebar if clicking outside of it
-         document.addEventListener('click', (event) => {
-            if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target) && document.body.classList.contains('sidebar-open')) {
-                 closeSidebar();
-            }
-         });
+        document.addEventListener('click', (event) => {
+            if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target) && document.body.classList.contains('sidebar-open')) { closeSidebar(); }
+        });
 
         // --- Initialization ---
         function initialize() {
-            loadPromptsFromCookies();
-             // Load the first prompt automatically, or start fresh
-             const firstPromptId = Object.keys(savedPrompts)[0];
-             if(firstPromptId) {
-                 loadPrompt(firstPromptId);
+            loadFontSizePreference(); // Load font size state & set buttons
+            loadPromptsFromStorage(); // Load prompts
+             const promptIds = Object.keys(savedPrompts);
+             if(promptIds.length > 0) {
+                 loadPrompt(promptIds[0]); // Load first prompt
              } else {
-                createNewPromptState(); // Start with a blank slate if no prompts saved
-                 showToast("Welcome! Create a new prompt or load one from the sidebar.");
+                createNewPromptState(); // Start blank
+                showToast("Welcome! Create a new prompt or load one.");
              }
-             closeSidebar(); // Start with sidebar closed
+             closeSidebar(); // Start closed
         }
 
-        // Wait for the DOM to be ready
+        // Wait for the DOM to be ready for the main script logic
         document.addEventListener('DOMContentLoaded', initialize);
 
     </script>
